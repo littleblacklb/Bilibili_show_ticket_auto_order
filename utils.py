@@ -15,7 +15,7 @@ from pydantic import ValidationError
 import customdataclasses
 from ResponseCodeException import ResponseCodeException
 from consts import Urls
-from customdataclasses import UserData
+from customdataclasses import DataUser
 
 # The config.json normally is stored in the same folder of the utils.py
 _config, SRC_PATH = None, os.path.join(os.path.dirname(os.path.abspath(__file__)), "./config.json")
@@ -43,9 +43,9 @@ class DbUserData:
         return list(data.keys())
 
     @staticmethod
-    def get_user_data(username: str) -> UserData:
+    def get_user_data(username: str) -> DataUser:
         user = DbUserData.get_all_users_data()[username]
-        return UserData(
+        return DataUser(
             userid=user["userid"],
             username=username,
             cookies=user["cookies"]
@@ -135,7 +135,7 @@ def retry(times: int = get_config().http.retry_max_times, delay: float = get_con
 
 @retry()
 async def request(client: httpx.AsyncClient, url: Urls, params: dict[str, Any] = None, data: dict[str, Any] = None,
-                  raw_content=False) -> Union[str, dict]:
+                  raw_content=False) -> Union[Any]:
     if data:
         resp = await client.request("POST", url.value, params=params, data=data)
     else:
