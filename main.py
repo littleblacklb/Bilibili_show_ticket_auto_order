@@ -1,14 +1,14 @@
 import sys
 import os
-from api import Api
+from api_old import Api
 from geetest import dealCode
 
-if not os.path.exists("config.txt"):
+if not os.path.exists("config.json"):
 	print("config.txt文件缺失")
 	os.system("pause")
 	sys.exit(0)
 
-a = open("config.txt","r").readlines()
+a = open("config.json", "r").readlines()
 proxies = None if a[0].split("=")[1].strip() == "None" else a[0].split("=")[1].strip()
 specificID = None if a[1].split("=")[1].strip() == "None" else a[1].split("=")[1].strip()
 sleep = eval(a[2].split("=")[1].strip())

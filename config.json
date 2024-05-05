@@ -1,0 +1,16 @@
+{
+  "http": {
+    "sleep": 1.7,
+    "retry_delay": 1,
+    "retry_max_times": 3,
+    "proxy_http": "",
+    "proxy_https": ""
+  },
+  "users": [
+    {
+      "uid": 114514,
+      "project_id": 1224
+    }
+  ]
+}
+

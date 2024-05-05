@@ -1,4 +1,0 @@
-proxies = None
-specificID = None
-sleep = 1.7
-token = None

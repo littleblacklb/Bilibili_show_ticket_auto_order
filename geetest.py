@@ -13,11 +13,11 @@ class dealCode():
 		self.u = ""
 
 	def load_cookies(self):
-		if not os.path.exists("user_data.json"):
+		if not os.path.exists("users_data.json"):
 			print("未找到用户数据文件")
 			os.system("pause")
 			exit()
-		with open("user_data.json","r") as r:
+		with open("users_data.json", "r") as r:
 			try:
 				data = json.load(r)
 				if len(data) == 0:

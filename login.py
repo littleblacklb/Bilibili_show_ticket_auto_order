@@ -14,14 +14,14 @@ def deal_cookies(raw):
 
 def get_login():
     print("请在网页端登录b站\n")
-    if not os.path.exists("user_data.json"):
-        t =  open("user_data.json","w")
+    if not os.path.exists("users_data.json"):
+        t =  open("users_data.json", "w")
         t.write("{}")
         t.close()
         print("初始化成功!")
         os.system("pause")
         exit()
-    with open("./user_data.json") as r:
+    with open("users_data.json") as r:
         config = json.load(r)
     options = webdriver.EdgeOptions()
     options.add_argument("--log-level=3")
@@ -42,7 +42,7 @@ def get_login():
 
     WebDriver.quit()
     print("cookie已保存\n运行结束\n")
-    with open("./user_data.json", "w") as f:
+    with open("users_data.json", "w") as f:
         json.dump(config, f, indent=2)
     os.system("pause")
 
