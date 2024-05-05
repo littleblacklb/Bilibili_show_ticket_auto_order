@@ -26,6 +26,7 @@ class HttpConfig(BaseModel):
 class User(BaseModel):
     uid: Union[int, str]
     project_id: Union[int, str]
+    idcard_name: str
 
 
 class Config(BaseModel):
