@@ -44,3 +44,10 @@ class Urls(Enum):
     ACQUIRE_PAYMENT_QR_CODE = "https://show.bilibili.com/api/ticket/order/createstatus"
 
 
+class AuthType(Enum):
+    """
+    项目实名认证规则
+    """
+    NO_AUTH = "NO_AUTH"
+    AUTH_PER_ORDER = "AUTH_PER_ORDER"
+    AUTH_PER_PERSON = "AUTH_PER_PERSON"
