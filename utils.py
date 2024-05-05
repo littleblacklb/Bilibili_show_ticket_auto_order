@@ -63,6 +63,13 @@ def get_config() -> customdataclasses.Config:
     return _config
 
 
+@logger.catch
+def save_config(new_config: customdataclasses.Config):
+    with open(SRC_PATH, "w") as src_f:
+        json.dump(json.loads(new_config.model_dump_json()), src_f, ensure_ascii=False, indent=4)
+        logger.success("新配置写入 config.json 成功")
+
+
 def load_and_validate_config_from_file() -> customdataclasses.Config:
     try:
         with open(SRC_PATH, "r") as src_f:
