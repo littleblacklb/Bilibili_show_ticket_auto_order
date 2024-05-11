@@ -1,21 +1,22 @@
 import asyncio
-import http.cookies
 import json
 import os
 import sys
 from functools import wraps
 from inspect import iscoroutinefunction
 from json import JSONDecodeError
-from typing import Union, Any
+from typing import Any, Union
 
 import httpx
+from httpx import Cookies
 from loguru import logger
 from pydantic import ValidationError
 
-import customdataclasses
+from customdataclasses import DataUser, Config, ConfigUser
+
 from ResponseCodeException import ResponseCodeException
 from consts import Urls
-from customdataclasses import DataUser
+from customtypes import HttpxProxies
 
 # The config.json normally is stored in the same folder of the utils.py
 _config, SRC_PATH = None, os.path.join(os.path.dirname(os.path.abspath(__file__)), "./config.json")
@@ -52,7 +53,7 @@ class DbUserData:
         )
 
 
-def get_config() -> customdataclasses.Config:
+def get_config() -> Config:
     """
     Get config.json configurations
     @return: Cached config if having been loaded from disk
@@ -64,20 +65,20 @@ def get_config() -> customdataclasses.Config:
 
 
 @logger.catch
-def save_config(new_config: customdataclasses.Config):
+def save_config(new_config: Config):
     with open(SRC_PATH, "w") as src_f:
         json.dump(json.loads(new_config.model_dump_json()), src_f, ensure_ascii=False, indent=4)
         logger.success("新配置写入 config.json 成功")
 
 
-def load_and_validate_config_from_file() -> customdataclasses.Config:
+def load_and_validate_config_from_file() -> Config:
     try:
         with open(SRC_PATH, "r") as src_f:
             raw_json_data = src_f.read()
-        return customdataclasses.Config.model_validate_json(raw_json_data)
+        return Config.model_validate_json(raw_json_data)
     except FileNotFoundError:
-        logger.error("config.json 未在运行目录找到!")
-        sys.exit(-1)
+        logger.info("config.json 未在运行目录找到，使用缺省值")
+        return Config()
     except ValidationError as e:
         logger.error("错误的 config.json, 查看以下信息以更正:")
         logger.error(e)
@@ -158,7 +159,46 @@ async def request(client: httpx.AsyncClient, url: Urls, params: dict[str, Any] =
     return resp_json
 
 
-def get_cookie_value(cookie: str, key: str):
-    ck = http.cookies.BaseCookie()
-    ck.load(cookie)
-    return ck[key].value
+@logger.catch
+def cookie_str2httpx_cookie(cookie: str) -> Cookies:
+    cookie_dict = dict()
+    for kv in cookie.split(";"):
+        kv_pair = kv.split("=")
+        k = kv_pair[0].strip()
+        if not k:
+            continue
+        v = kv_pair[1].strip()
+        cookie_dict[k] = v
+    return httpx.Cookies(cookie_dict)
+
+
+def get_user_in_config(uid: str) -> ConfigUser:
+    for o in get_config().users:
+        if str(o.uid) == str(uid):
+            return o
+    logger.error(f"{uid} 还未进行选票配置，请运行 ShowConfiguration.py 进行配置!")
+    sys.exit(-1)
+
+
+def get_payload(uid: str) -> dict:
+    user_obj = get_user_in_config(uid)
+    proj = user_obj.project
+    m1 = proj.payload_universal
+    m2 = proj.payload_with_auth
+    m1_: dict = json.loads(m1.model_dump_json())
+    m2_: dict = json.loads(m2.model_dump_json())
+    m1_.update(m2_)
+    return m1_
+
+
+def load_proxies(http: str, https: str = "") -> HttpxProxies:
+    """
+    Transform str proxies to Httpx format proxies
+    @param http: http proxy url
+    @param https: https proxy url
+    @return: dict[str, HTTPTransport]
+    """
+    return HttpxProxies({
+        "http://": httpx.HTTPTransport(proxy=http),
+        "https://": httpx.HTTPTransport(proxy=https if https else http),
+    })
